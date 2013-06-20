@@ -9,9 +9,6 @@ import string
 import re
 import logging
 
-import gui
-from config import options
-
 FONT = "Consolas"
 
 
@@ -155,7 +152,7 @@ class Gui(cocos.layer.Layer):
             self.labels.append(label)
             self.add(label)
 
-    class Menu(gui.CustomMenu):
+    class Menu(cocos.menu.Menu):
         colours = [(255, 100, 220), (129, 255, 100), (50, 50, 100), 
                     (100, 180, 255), (220, 130, 190), (130, 240, 180), 
                     (230, 134, 184), (255, 200, 150)]
@@ -362,7 +359,7 @@ class JoinMenu(menu.Menu):
 
         # then add the items
         items = [
-            (menu.EntryMenuItem('Nickname:', self.on_name_change, options["game"]["name"], max_length=14) ),
+            (menu.EntryMenuItem('Nickname:', self.on_name_change, "default_name", max_length=14) ),
             (menu.EntryMenuItem('IP-address:', self.on_ip_change, '127.0.0.1', max_length=15)),
             (menu.EntryMenuItem('Port:', self.on_port_change, '8035', max_length=15)),
             (menu.MenuItem('Join game', self.join))
@@ -397,10 +394,12 @@ class HostMenu(menu.Menu):
         self.ip = socket.gethostbyname(socket.gethostname())
         self.nickname = "Badlybader"
 
+        player_name = OPTIONS.get("player_name") or "Player" #Example of how passing options should be used
+
 
         # then add the items
         items = [
-            (menu.EntryMenuItem('Nickname:', self.on_name_change, options["game"]["name"], max_length=14)),
+            (menu.EntryMenuItem('Nickname:', self.on_name_change, player_name, max_length=14)),
             (menu.EntryMenuItem('Port:', self.on_port_change, '8035',max_length=5)),
             (menu.MenuItem('Host game!', self.host)) 
             ]
@@ -449,6 +448,12 @@ class Menu(menu.Menu):
 #port = 8035
 #ip_label = cocos.text.Label("Your local ip: %s:%s"%(ip,port),(200,300))
 
+def CreateScene(layer=None, **opts):
+    """Creates the menu for hosting/joining a game.
+        Layer will be added as a layer to the final lobby layer so you can catch user input etc.
 
-
-MainScene = cocos.scene.Scene(cocos.layer.MultiplexLayer(Menu(),HostMenu() ,JoinMenu()))
+        Once the game starts, connection info and the layer passed, if given, will be returned"""
+    global OPTIONS
+    OPTIONS = opts
+    scene = cocos.scene.Scene(cocos.layer.MultiplexLayer(Menu(),HostMenu() ,JoinMenu()))
+    return
